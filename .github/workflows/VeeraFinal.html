@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Explorer</title>
+    <style>
+        /* Previous styles remain the same */
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            overflow: hidden;
+        }
+        .container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        #status {
+            font-size: 1.2rem;
+            margin-right: 1rem;
+        }
+        #countdown {
+            font-size: 1.2rem;
+            margin-right: 1rem;
+            min-width: 100px;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            background-color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        #website-frame {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 60px);
+            border: none;
+            transition: opacity 0.3s;
+        }
+        .home-content {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .description {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+        #activity-log {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 300px;
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <div id="status">Ready to explore</div>
+            <div id="countdown"></div>
+            <button onclick="startCycle()" id="startButton">Start Exploring</button>
+            <button onclick="stopCycle()" id="stopButton" style="display: none;">Stop</button>
+        </div>
+    </div>
+
+    <div class="home-content" id="homeContent">
+        <h1>Web Explorer</h1>
+        <p class="description">
+            Click Start to begin exploring websites automatically with natural browsing behavior.
+        </p>
+    </div>
+
+    <div id="activity-log"></div>
+    <iframe id="website-frame" style="display: none;"></iframe>
+
+    <script>
+        class WebsiteManager {
+            constructor() {
+                this.websites = [
+                    'https://google.com',
+                    'https://facebook.com',
+                    'https://youtube.com',
+                    'https://twitter.com',
+                    'https://instagram.com',
+                    'https://reddit.com',
+                    'https://linkedin.com',
+                    'https://wikipedia.org',
+                    'https://amazon.com',
+                    'https://ebay.com',
+                    'https://netflix.com',
+                    'https://yahoo.com',
+                    'https://bing.com',
+                    'https://duckduckgo.com',
+                    'https://tiktok.com',
+                    'https://whatsapp.com',
+                    'https://snapchat.com',
+                    'https://telegram.org',
+                    'https://discord.com',
+                    'https://github.com',
+                    'https://stackoverflow.com',
+                    'https://quora.com',
+                    'https://medium.com',
+                    'https://wordpress.com',
+                    'https://pinterest.com',
+                    'https://imdb.com',
+                    'https://bbc.com',
+                    'https://cnn.com',
+                    'https://nytimes.com',
+                    'https://forbes.com',
+                    'https://bloomberg.com',
+                    'https://espn.com',
+                    'https://nasa.gov',
+                    'https://spotify.com',
+                    'https://soundcloud.com',
+                    'https://apple.com',
+                    'https://microsoft.com',
+                    'https://adobe.com',
+                    'https://cloudflare.com',
+                    'https://mozilla.org',
+                    'https://zoom.us',
+                    'https://dropbox.com',
+                    'https://mega.nz',
+                    'https://shopify.com',
+                    'https://aliexpress.com',
+                    'https://tesla.com',
+                    'https://samsung.com',
+                    'https://nvidia.com',
+                    'https://amd.com',
+                    'https://intel.com',
+                    'https://playstation.com',
+                    'https://xbox.com',
+                    'https://steam.com',
+                    'https://epicgames.com',
+                    'https://twitch.tv',
+                    'https://patreon.com',
+                    'https://udemy.com',
+                    'https://coursera.org',
+                    'https://edx.org',
+                    'https://healthline.com',
+                    'https://webmd.com',
+                    'https://who.int',
+                    'https://un.org',
+                    'https://coinmarketcap.com',
+                    'https://coingecko.com',
+                    'https://opensea.io',
+                    'https://etherscan.io',
+                    'https://solscan.io'
+                ];
+                this.currentIndex = 0;
+            }
+
+            getNextWebsite() {
+                const site = this.websites[this.currentIndex];
+                this.currentIndex = (this.currentIndex + 1) % this.websites.length;
+                return site;
+            }
+
+            getRandomTime(min, max) {
+                return Math.floor(Math.random() * (max - min + 1) + min);
+            }
+
+            getRandomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1) + min);
+            }
+        }
+
+        class HumanBehaviorSimulator {
+            constructor(iframe) {
+                this.iframe = iframe;
+                this.manager = new WebsiteManager();
+                this.currentScrollY = 0;
+                this.maxScroll = 0;
+                this.scrollInterval = null;
+                this.interactionInterval = null;
+            }
+
+            logActivity(message) {
+                const log = document.getElementById('activity-log');
+                log.style.display = 'block';
+                log.textContent = message;
+                setTimeout(() => log.style.display = 'none', 2000);
+            }
+
+            async simulateHumanBehavior() {
+                try {
+                    // Reset scroll position
+                    this.currentScrollY = 0;
+                    
+                    // Random initial delay
+                    await this.delay(this.manager.getRandomTime(1000, 3000));
+                    
+                    // Start random scrolling
+                    this.startRandomScrolling();
+                    
+                    // Start random interactions
+                    this.startRandomInteractions();
+                } catch (error) {
+                    console.log('Behavior simulation error:', error);
+                }
+            }
+
+            async delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            startRandomScrolling() {
+                if (this.scrollInterval) clearInterval(this.scrollInterval);
+                
+                this.scrollInterval = setInterval(() => {
+                    try {
+                        // Randomly decide scroll direction
+                        const direction = Math.random() > 0.5 ? 1 : -1;
+                        const scrollAmount = this.manager.getRandomInt(100, 300) * direction;
+                        
+                        this.currentScrollY += scrollAmount;
+                        this.currentScrollY = Math.max(0, this.currentScrollY); // Don't go below 0
+                        
+                        this.iframe.contentWindow.scrollTo({
+                            top: this.currentScrollY,
+                            behavior: 'smooth'
+                        });
+
+                        this.logActivity(`Scrolling ${direction > 0 ? 'down' : 'up'}`);
+                    } catch (error) {
+                        console.log('Scroll error:', error);
+                    }
+                }, this.manager.getRandomTime(2000, 5000));
+            }
+
+            startRandomInteractions() {
+                if (this.interactionInterval) clearInterval(this.interactionInterval);
+                
+                this.interactionInterval = setInterval(() => {
+                    try {
+                        // Simulate random mouse movements and clicks
+                        const x = this.manager.getRandomInt(0, this.iframe.clientWidth);
+                        const y = this.manager.getRandomInt(0, this.iframe.clientHeight);
+                        
+                        // Create and dispatch mouse events
+                        const moveEvent = new MouseEvent('mousemove', {
+                            view: this.iframe.contentWindow,
+                            bubbles: true,
+                            cancelable: true,
+                            clientX: x,
+                            clientY: y
+                        });
+
+                        if (Math.random() > 0.7) { // 30% chance to click
+                            const clickEvent = new MouseEvent('click', {
+                                view: this.iframe.contentWindow,
+                                bubbles: true,
+                                cancelable: true,
+                                clientX: x,
+                                clientY: y
+                            });
+                            this.iframe.contentDocument.elementFromPoint(x, y)?.dispatchEvent(clickEvent);
+                            this.logActivity('Clicked element');
+                        }
+
+                        this.iframe.contentDocument.elementFromPoint(x, y)?.dispatchEvent(moveEvent);
+                        this.logActivity('Moving mouse');
+                    } catch (error) {
+                        console.log('Interaction error:', error);
+                    }
+                }, this.manager.getRandomTime(3000, 8000));
+            }
+
+            stopBehavior() {
+                if (this.scrollInterval) clearInterval(this.scrollInterval);
+                if (this.interactionInterval) clearInterval(this.interactionInterval);
+            }
+        }
+
+        const manager = new WebsiteManager();
+        const iframe = document.getElementById('website-frame');
+        const humanBehavior = new HumanBehaviorSimulator(iframe);
+        let isRunning = false;
+        let countdownInterval;
+
+        // Previous functions remain the same
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        function updateCountdown(seconds) {
+            document.getElementById('countdown').textContent = 
+                seconds > 0 ? `Next site in: ${seconds}s` : '';
+        }
+
+        function showHome() {
+            iframe.style.display = 'none';
+            homeContent.style.display = 'flex';
+            humanBehavior.stopBehavior();
+        }
+
+        function showWebsite() {
+            iframe.style.display = 'block';
+            homeContent.style.display = 'none';
+            humanBehavior.simulateHumanBehavior();
+        }
+
+        function stopCycle() {
+            isRunning = false;
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            document.getElementById('startButton').style.display = 'inline';
+            document.getElementById('stopButton').style.display = 'none';
+            updateStatus('Exploration stopped');
+            updateCountdown(0);
+            humanBehavior.stopBehavior();
+            showHome();
+        }
+
+        function visitNextSite() {
+            if (!isRunning) return;
+
+            const site = manager.getNextWebsite();
+            const timestamp = Date.now();
+            const randomParam = Math.random().toString(36).substring(7);
+            const separator = site.includes('?') ? '&' : '?';
+            const finalUrl = `${site}${separator}t=${timestamp}&r=${randomParam}`;
+
+            iframe.src = finalUrl;
+            showWebsite();
+            
+            const visitDuration = manager.getRandomTime(15, 30);
+            let timeLeft = visitDuration;
+
+            updateStatus(`Visiting: ${site}`);
+            updateCountdown(timeLeft);
+
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            countdownInterval = setInterval(() => {
+                if (!isRunning) {
+                    clearInterval(countdownInterval);
+                    return;
+                }
+
+                timeLeft--;
+                updateCountdown(timeLeft);
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    const nextDelay = manager.getRandomTime(2, 5);
+                    updateStatus(`Loading next site in ${nextDelay} seconds...`);
+                    setTimeout(() => {
+                        if (isRunning) {
+                            visitNextSite();
+                        }
+                    }, nextDelay * 1000);
+                }
+            }, 1000);
+        }
+
+        function startCycle() {
+            if (isRunning) return;
+            isRunning = true;
+            document.getElementById('startButton').style.display = 'none';
+            document.getElementById('stopButton').style.display = 'inline';
+            updateStatus('Starting exploration...');
+            visitNextSite();
+        }
+    </script>
+</body>
+</html>
